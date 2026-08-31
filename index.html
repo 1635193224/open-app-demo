@@ -133,7 +133,8 @@
     <div class="page-desc">
       直接点击下方按钮测试唤起逻辑<br />
       安卓微信：弹系统询问框（有 2 秒决策时间）<br />
-      iOS 微信：通常静默拦截 → 2 秒后弹"在浏览器中打开"引导
+      iOS 微信：通常静默拦截 → 2 秒后弹"在浏览器中打开"引导<br />
+      <div id="info"></div>
     </div>
   </div>
 
@@ -220,7 +221,7 @@
     // ========== 唤起执行（与 useOpenApp.js tryOpenApp 一致，超时 2000ms 保持现有逻辑） ==========
     async function tryOpenApp() {
       var scheme = buildAppScheme()
-alert(scheme)
+document.getElementById('test').innerText = scheme
       // ① https 优先：UNIVERSAL_LINK_DOMAIN 未配置，跳过
       // ② scheme 兜底尝试 + 检测
       var result = await trySchemeWithDetect(scheme)
