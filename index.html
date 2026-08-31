@@ -220,7 +220,7 @@
     // ========== 唤起执行（与 useOpenApp.js tryOpenApp 一致，超时 2000ms 保持现有逻辑） ==========
     async function tryOpenApp() {
       var scheme = buildAppScheme()
-
+alert(scheme)
       // ① https 优先：UNIVERSAL_LINK_DOMAIN 未配置，跳过
       // ② scheme 兜底尝试 + 检测
       var result = await trySchemeWithDetect(scheme)
