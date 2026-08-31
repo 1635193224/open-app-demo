@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Open App 唤起测试 Demo</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f5f6f7;
+    }
+    .page {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .page-desc {
+      font-size: 13px;
+      color: #999;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* 悬浮按钮（与线上 open-app-button 视觉一致） */
+    .open-app-btn {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      height: 44px;
+      padding: 0 24px;
+      background: #16BA77;
+      border-radius: 9999px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+    }
+    .open-app-btn svg {
+      width: 32px;
+      height: 32px;
+      margin-right: 6px;
+    }
+
+    /* 微信引导全屏遮罩（与线上 open-app-guide 一致） */
+    .open-app-guide {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .open-app-guide.show {
+      display: flex;
+    }
+    .open-app-guide-inner {
+      width: 100%;
+      max-width: 340px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .open-app-guide-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      line-height: 24px;
+      margin-bottom: 20px;
+    }
+    .open-app-guide-step {
+      display: flex;
+      align-items: center;
+      text-align: left;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .open-app-guide-step:last-child {
+      margin-bottom: 0;
+    }
+    .open-app-guide-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #16BA77;
+      color: #fff;
+      font-size: 12px;
+      line-height: 18px;
+      text-align: center;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .open-app-guide-confirm {
+      margin-top: 24px;
+      width: 100%;
+      height: 40px;
+      background: #16BA77;
+      border: none;
+      border-radius: 9999px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="page-title">App 唤醒测试 Demo</div>
+    <div class="page-desc">
+      直接点击下方按钮测试唤起逻辑<br />
+      安卓微信：弹系统询问框（有 2 秒决策时间）<br />
+      iOS 微信：通常静默拦截 → 2 秒后弹"在浏览器中打开"引导
+    </div>
+  </div>
+
+  <!-- 悬浮按钮 -->
+  <div id="openAppBtn" class="open-app-btn">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clip-path="url(#clip0_2919_96074)">
+        <rect width="32" height="32" transform="translate(-0.0117188 0.0375977)" fill="transparent"/>
+        <path d="M15.9625 18.6988L25.2425 23.9433L27.5625 22.6322L27.5625 9.52107L25.2425 8.20996L9.0025 17.3877L9.0025 14.7655L9.0025 20.01L22.9225 12.1433L22.9225 17.3877M27.5625 22.6322L18.2825 17.3877M25.2425 8.20996L25.2425 18.6989L20.6025 16.0766L22.9225 14.7655M25.2425 8.20996L13.6425 14.7655L4.3625 9.52107M22.9225 14.7655L13.6425 20.01M15.9625 13.4544L6.6825 8.20996L4.3625 9.52107L4.3625 22.6322L6.6825 23.9433L22.9225 14.7655M22.9225 12.1433L13.6425 17.3877M6.6825 23.9433L6.6825 13.4544L11.3225 16.0766" stroke="white" stroke-width="0.714286" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <defs>
+        <clipPath id="clip0_2919_96074">
+          <rect width="32" height="32" fill="white"/>
+        </clipPath>
+      </defs>
+    </svg>
+    <span id="openAppBtnText">在 App 中打开</span>
+  </div>
+
+  <!-- 微信引导遮罩 -->
+  <div id="openAppGuide" class="open-app-guide" @click.self="closeGuide">
+    <div class="open-app-guide-inner">
+      <div class="open-app-guide-title">请在浏览器中打开后使用</div>
+      <div class="open-app-guide-step">
+        <span class="open-app-guide-num">1</span>
+        <span>点击右上角</span>
+      </div>
+      <div class="open-app-guide-step">
+        <span class="open-app-guide-num">2</span>
+        <span>选择「在浏览器中打开」</span>
+      </div>
+      <button class="open-app-guide-confirm">我知道了</button>
+    </div>
+  </div>
+
+  <script>
+    // ========== 常量（与 app/config/app.js 一致） ==========
+    var OPEN_APP_SCHEME = 'xmakerhub://'
+    var DEMO_SCHEME_PATH = 'demo' // demo 固定路径，正式代码走 APP_ROUTE_MAP 匹配
+    var UNIVERSAL_LINK_DOMAIN = '' // 未配置，降级走 scheme
+    var APP_STORE_URL = ''
+    var APP_DOWNLOAD_URL = 'https://api.xmakerhub.cn/release/project/download-app/xmakerhub'
+    var OPEN_APP_MOBILE_UA_REGEX = /Android|iPhone|iPad|iPod|Windows Phone/i
+    var SCHEME_DETECT_TIMEOUT = 2000 // 与现有正式代码一致
+
+    // ========== 环境检测（与 useOpenApp.js env 一致） ==========
+    function getEnv() {
+      var ua = navigator.userAgent
+      return {
+        isWechat: /MicroMessenger/i.test(ua),
+        isIOS: /iPad|iPhone|iPod/.test(ua),
+        isAndroid: /Android/.test(ua)
+      }
+    }
+    var env = getEnv()
+
+    // ========== 页面隐藏检测（与 useOpenApp.js waitForHidden 一致） ==========
+    function waitForHidden(timeout) {
+      return new Promise(function (resolve) {
+        var hasHidden = false
+        var startTime = Date.now()
+
+        var onVisibilityChange = function () {
+          if (document.hidden) {
+            hasHidden = true
+          }
+        }
+
+        document.addEventListener('visibilitychange', onVisibilityChange)
+
+        setTimeout(function () {
+          document.removeEventListener('visibilitychange', onVisibilityChange)
+          var elapsed = Date.now() - startTime
+          resolve({ hidden: hasHidden || document.hidden, elapsed: elapsed })
+        }, timeout)
+      })
+    }
+
+    // ========== 链接构建（demo 无路由匹配，固定 scheme） ==========
+    function buildAppScheme() {
+      return OPEN_APP_SCHEME + DEMO_SCHEME_PATH
+    }
+
+    // ========== 唤起执行（与 useOpenApp.js tryOpenApp 一致，超时 2000ms 保持现有逻辑） ==========
+    async function tryOpenApp() {
+      var scheme = buildAppScheme()
+
+      // ① https 优先：UNIVERSAL_LINK_DOMAIN 未配置，跳过
+      // ② scheme 兜底尝试 + 检测
+      var result = await trySchemeWithDetect(scheme)
+
+      if (result.success) {
+        return result
+      }
+
+      // ③ 失败按环境分流：微信弹引导遮罩，非微信跳下载页
+      if (env.isWechat) {
+        showWechatGuide()
+        return { success: false, reason: 'wechat-guide' }
+      }
+
+      window.location.href = APP_DOWNLOAD_URL
+      return { success: false, reason: 'show-fallback-options' }
+    }
+
+    // scheme 唤起 + 结果检测（与 useOpenApp.js trySchemeWithDetect 一致）
+    async function trySchemeWithDetect(scheme, timeout) {
+      timeout = timeout || SCHEME_DETECT_TIMEOUT
+      window.location.href = scheme
+      var detect = await waitForHidden(timeout)
+
+      if (detect.hidden) {
+        return { success: true, strategy: 'scheme', elapsed: detect.elapsed }
+      }
+
+      return { success: false, reason: 'not-installed-or-cancelled' }
+    }
+
+    // ========== 状态 ==========
+    var launching = false
+
+    // ========== 按钮 ==========
+    var openAppBtn = document.getElementById('openAppBtn')
+    var openAppBtnText = document.getElementById('openAppBtnText')
+
+    function setLaunching(value) {
+      launching = value
+      openAppBtnText.textContent = value ? '正在唤起…' : '在 App 中打开'
+    }
+
+    // ========== 微信引导遮罩 ==========
+    var openAppGuide = document.getElementById('openAppGuide')
+    var guideConfirmBtn = openAppGuide.querySelector('.open-app-guide-confirm')
+
+    function showWechatGuide() {
+      openAppGuide.classList.add('show')
+    }
+    function closeWechatGuide() {
+      openAppGuide.classList.remove('show')
+    }
+    openAppGuide.addEventListener('click', function (event) {
+      if (event.target === openAppGuide) {
+        closeWechatGuide()
+      }
+    })
+    guideConfirmBtn.addEventListener('click', closeWechatGuide)
+
+    // ========== 全局点击拦截（与 open-app-click.client.js 一致） ==========
+    function handleClick(event) {
+      // 引导遮罩内部交互放行，避免被全局拦截劫持
+      if (event.target.closest && event.target.closest('.open-app-guide')) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (launching) {
+        return
+      }
+
+      setLaunching(true)
+      tryOpenApp().finally(function () {
+        setLaunching(false)
+      })
+    }
+
+    document.addEventListener('click', handleClick, true)
+  </script>
+</body>
+</html>
